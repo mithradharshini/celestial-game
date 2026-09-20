@@ -11,9 +11,9 @@
 - **5 Celestial Stages**:
   - **Stage 1: Crescent 🌒** (4×3 grid, 6 pairs) — Master the basics.
   - **Stage 2: Half Moon 🌓** (4×4 grid, 8 pairs) — Starlight shimmer every 3rd match; smooth moon phase transition.
-  - **Stage 3: Gibbous 🌔** (5×4 grid, 10 pairs) — Introduces the 60s countdown timer.
-  - **Stage 4: Full Moon 🌕** (6×4 grid, 12 pairs, 75s timer) — **Eclipse Mechanic**: flipping a `🌑` Eclipse tile dims all other tiles for 2s.
-  - **Stage 5: Constellation ⭐** (6×5 grid, 15 pairs, 90s timer) — 15 distinct symbols, Eclipse dimming, and an interactive **Choreographed Constellation Finale**.
+  - **Stage 3: Gibbous 🌔** (5×4 grid, 10 pairs) — Expanded sky with 10 pairs.
+  - **Stage 4: Full Moon 🌕** (6×4 grid, 12 pairs) — **Eclipse Mechanic**: flipping a `🌑` Eclipse tile dims all other tiles for 2s.
+  - **Stage 5: Constellation ⭐** (6×5 grid, 15 pairs) — 15 distinct symbols, Eclipse dimming, and an interactive **Choreographed Constellation Finale**.
 - **Visuals & Polish**:
   - Canvas-driven twinkling and drifting starfield.
   - Dynamically rendered lunar phases that evolve as you progress.
