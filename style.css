@@ -1,0 +1,799 @@
+/* ==========================================================================
+   CELESTIAL — Core Design System & Styling
+   ========================================================================== */
+
+:root {
+  /* Color Palette: Deep Night Sky, Starlight Gold, Silver & Violet */
+  --bg-deep: #040711;
+  --bg-indigo: #090e21;
+  --bg-card: rgba(14, 21, 44, 0.75);
+  --bg-card-hover: rgba(22, 33, 66, 0.85);
+  
+  --accent-gold: #f5d77f;
+  --accent-gold-soft: rgba(245, 215, 127, 0.4);
+  --accent-gold-glow: rgba(245, 215, 127, 0.6);
+  --accent-silver: #e2e8f0;
+  --accent-violet: #a78bfa;
+  --accent-violet-glow: rgba(167, 139, 250, 0.45);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  /* Typography */
+  --font-display: 'Cinzel', serif;
+  --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Layout & Grid Variables (dynamically updated via JS or media queries) */
+  --cols: 4;
+  --rows: 3;
+  --grid-gap: 12px;
+  --tile-radius: 12px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ==========================================================================
+   Background & Ambient Canvas
+   ========================================================================== */
+#canvas-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#sky-canvas,
+#particle-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#sky-canvas {
+  z-index: 1;
+}
+
+#particle-canvas {
+  z-index: 30; /* Above cards for dissolving particles */
+}
+
+/* ==========================================================================
+   Main Application Layout
+   ========================================================================== */
+#app-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+.screen.active {
+  display: flex;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ==========================================================================
+   Screen 1: Home Screen
+   ========================================================================== */
+#home-screen {
+  justify-content: center;
+}
+
+.home-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px;
+  max-width: 480px;
+  animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.moon-crest-symbol {
+  font-size: 2rem;
+  color: var(--accent-gold);
+  margin-bottom: 12px;
+  text-shadow: 0 0 16px var(--accent-gold-glow);
+  animation: pulseGlow 4s infinite ease-in-out;
+}
+
+.game-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 7vw, 4.2rem);
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: #fff;
+  margin-bottom: 8px;
+  text-shadow: 0 0 25px rgba(245, 215, 127, 0.35), 0 0 50px rgba(167, 139, 250, 0.2);
+  margin-right: -0.25em; /* counteract letter-spacing offset for true center */
+}
+
+.game-tagline {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  color: var(--accent-silver);
+  opacity: 0.85;
+  margin-bottom: 40px;
+}
+
+.menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 240px;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.btn {
+  appearance: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  padding: 14px 28px;
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, rgba(245, 215, 127, 0.9), rgba(220, 185, 95, 0.85));
+  color: #070b19;
+  box-shadow: 0 0 20px rgba(245, 215, 127, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 28px rgba(245, 215, 127, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--accent-silver);
+  border: 1px solid rgba(226, 232, 240, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.btn-secondary:hover {
+  background: rgba(26, 38, 68, 0.7);
+  border-color: rgba(245, 215, 127, 0.45);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   Screen 2: Game Screen & Persistent HUD
+   ========================================================================== */
+#game-screen {
+  padding: 16px 20px;
+  justify-content: space-between;
+}
+
+.hud-header {
+  width: 100%;
+  max-width: 860px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(8, 14, 30, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(245, 215, 127, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 20;
+}
+
+.hud-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.hud-logo {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--accent-gold);
+  text-shadow: 0 0 12px var(--accent-gold-soft);
+}
+
+.hud-center {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+}
+
+.stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+}
+
+.stage-moon-icon {
+  font-size: 1.15rem;
+  filter: drop-shadow(0 0 8px rgba(245, 215, 127, 0.5));
+}
+
+.stage-name {
+  font-weight: 600;
+}
+
+.hud-right {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.timer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--accent-gold);
+  background: rgba(245, 215, 127, 0.08);
+  border: 1px solid rgba(245, 215, 127, 0.25);
+  padding: 4px 12px;
+  border-radius: 999px;
+  transition: opacity 0.3s ease, border-color 0.3s ease;
+}
+
+.timer-badge.warning {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.5);
+  animation: timerWarning 1s infinite alternate ease-in-out;
+}
+
+.timer-moon {
+  font-size: 0.95rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ==========================================================================
+   Board Wrapper & Grid
+   ========================================================================== */
+#board-wrapper {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  min-height: 0; /* important for flexbox overflow containment */
+}
+
+.tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+  gap: var(--grid-gap);
+  width: min(88vw, calc(72vh * (var(--cols) / var(--rows))), 760px);
+  aspect-ratio: var(--cols) / var(--rows);
+  max-height: calc(75vh - 70px);
+  position: relative;
+  transition: filter 0.4s ease;
+}
+
+/* Stage 2 Shimmer / Shake effect */
+.board-shimmer {
+  animation: boardShimmer 0.5s ease-in-out;
+}
+
+@keyframes boardShimmer {
+  0% { transform: translate(0, 0) scale(1); filter: drop-shadow(0 0 0 rgba(167, 139, 250, 0)); }
+  15% { transform: translate(-3px, 2px) scale(1.01); filter: drop-shadow(0 0 15px rgba(245, 215, 127, 0.5)); }
+  35% { transform: translate(3px, -2px) scale(0.99); filter: drop-shadow(0 0 25px rgba(167, 139, 250, 0.7)); }
+  55% { transform: translate(-2px, -1px) scale(1.008); filter: drop-shadow(0 0 18px rgba(245, 215, 127, 0.4)); }
+  75% { transform: translate(2px, 1px) scale(0.995); filter: drop-shadow(0 0 10px rgba(167, 139, 250, 0.3)); }
+  100% { transform: translate(0, 0) scale(1); filter: drop-shadow(0 0 0 rgba(167, 139, 250, 0)); }
+}
+
+/* ==========================================================================
+   Tile Cards & 3D Flip
+   ========================================================================== */
+.tile {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  perspective: 1000px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.tile-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s ease, opacity 0.4s ease;
+  border-radius: var(--tile-radius);
+}
+
+.tile.flipped .tile-inner {
+  transform: rotateY(180deg);
+}
+
+.tile-front,
+.tile-back {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--tile-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tile Back (Facing up initially) */
+.tile-back {
+  background: linear-gradient(135deg, #0d1428 0%, #16203d 100%);
+  border: 1px solid rgba(245, 215, 127, 0.22);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 0 14px rgba(245, 215, 127, 0.05);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  overflow: hidden;
+}
+
+.tile:hover .tile-back {
+  border-color: rgba(245, 215, 127, 0.45);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(245, 215, 127, 0.18);
+  transform: translateY(-1px);
+}
+
+/* Constellation pattern on tile back */
+.tile-constellation {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.tile-back-center-star {
+  position: relative;
+  z-index: 2;
+  font-size: 1.15rem;
+  color: var(--accent-gold);
+  text-shadow: 0 0 8px var(--accent-gold-glow);
+  opacity: 0.85;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.tile:hover .tile-back-center-star {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+/* Tile Front (Revealed on flip) */
+.tile-front {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, #17213d 0%, #24335c 100%);
+  border: 1.5px solid rgba(167, 139, 250, 0.45);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(167, 139, 250, 0.12);
+}
+
+.tile-symbol {
+  font-size: clamp(1.6rem, 3.8vw, 2.5rem);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
+}
+
+/* Match state */
+.tile.matching .tile-inner {
+  box-shadow: 0 0 30px var(--accent-gold-glow), 0 0 50px var(--accent-violet-glow);
+  border-color: var(--accent-gold);
+  transition: transform 0.35s ease-out, opacity 0.35s ease-out, filter 0.35s ease;
+}
+
+.tile.dissolved {
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Eclipse Mechanic: dim other tiles */
+.tiles-grid.eclipse-dimmed .tile:not(.flipped):not(.dissolved) .tile-inner {
+  filter: brightness(0.4) saturate(0.65);
+}
+
+/* ==========================================================================
+   Bottom HUD (3-Star Live Indicator)
+   ========================================================================== */
+.hud-footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.stars-indicator {
+  display: flex;
+  gap: 12px;
+  background: rgba(8, 14, 30, 0.5);
+  padding: 6px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.star-slot {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  opacity: 0.35;
+  transition: color 0.4s ease, opacity 0.4s ease, text-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.star-slot.star-active {
+  color: var(--accent-gold);
+  opacity: 1;
+  text-shadow: 0 0 12px var(--accent-gold-glow);
+  transform: scale(1.08);
+}
+
+/* ==========================================================================
+   Modals & Overlays
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 7, 17, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 20px;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 440px;
+  background: linear-gradient(145deg, rgba(16, 25, 52, 0.95), rgba(9, 14, 30, 0.98));
+  border: 1px solid rgba(245, 215, 127, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(245, 215, 127, 0.12);
+  padding: 32px 28px;
+  text-align: center;
+  animation: modalScaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #fff;
+  margin-bottom: 12px;
+  text-shadow: 0 0 16px rgba(245, 215, 127, 0.3);
+}
+
+.modal-subline {
+  font-size: 1.05rem;
+  color: var(--accent-silver);
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+/* How to Play list */
+.instructions-list {
+  list-style: none;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 24px 0 32px;
+}
+
+.instructions-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 0.98rem;
+  color: var(--accent-silver);
+  line-height: 1.4;
+}
+
+.inst-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(245, 215, 127, 0.12);
+  border: 1px solid rgba(245, 215, 127, 0.4);
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* Stage Complete Modal */
+.stage-complete-crest {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 16px var(--accent-gold-glow));
+  animation: floatCrest 3s infinite ease-in-out;
+}
+
+.earned-stars-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 16px 0 28px;
+}
+
+.earned-star {
+  font-size: 2rem;
+  color: var(--text-muted);
+  opacity: 0.25;
+  transform: scale(0.7);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.earned-star.revealed {
+  color: var(--accent-gold);
+  opacity: 1;
+  transform: scale(1.15);
+  text-shadow: 0 0 16px var(--accent-gold-glow);
+}
+
+/* Time Up Modal (Darkened Fade) */
+.time-up-overlay {
+  background: rgba(2, 3, 7, 0.96);
+  transition: opacity 1.5s ease;
+}
+
+.modal-darkened {
+  border-color: rgba(148, 163, 184, 0.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(99, 102, 241, 0.1);
+}
+
+.dawn-crest {
+  font-size: 2.2rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.time-up-title {
+  color: #f1f5f9;
+  letter-spacing: 0.18em;
+}
+
+.modal-actions-dual {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+/* ==========================================================================
+   Screen 5: Finale Overlay
+   ========================================================================== */
+.finale-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(10, 16, 36, 0.6) 0%, rgba(4, 7, 17, 0.9) 100%);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1.2s ease;
+  pointer-events: auto;
+}
+
+.finale-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.finale-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 32px;
+  max-width: 520px;
+  animation: fadeIn 1.2s ease forwards;
+}
+
+.finale-star-spark {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.3em;
+  color: var(--accent-gold);
+  margin-bottom: 16px;
+  text-shadow: 0 0 16px var(--accent-gold-glow);
+}
+
+.finale-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5.5vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #fff;
+  margin-bottom: 12px;
+  text-shadow: 0 0 30px rgba(245, 215, 127, 0.4), 0 0 60px rgba(167, 139, 250, 0.3);
+}
+
+.finale-subline {
+  font-size: 1.25rem;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  color: var(--accent-silver);
+  margin-bottom: 40px;
+  font-style: italic;
+}
+
+.finale-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   Animations & Responsive Grid Rules
+   ========================================================================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.15); opacity: 1; text-shadow: 0 0 24px var(--accent-gold); }
+}
+
+@keyframes floatCrest {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes timerWarning {
+  from { opacity: 1; }
+  to { opacity: 0.6; }
+}
+
+/* Transpose grids on portrait phones so tiles stay large & comfortable */
+@media (orientation: portrait), (max-aspect-ratio: 1/1) {
+  :root {
+    --grid-gap: 8px;
+    --tile-radius: 10px;
+  }
+
+  .tiles-grid {
+    grid-template-columns: repeat(var(--rows), 1fr);
+    grid-template-rows: repeat(var(--cols), 1fr);
+    aspect-ratio: var(--rows) / var(--cols);
+    width: min(94vw, calc(68vh * (var(--rows) / var(--cols))), 480px);
+    max-height: calc(70vh - 60px);
+  }
+
+  .hud-header {
+    padding: 8px 14px;
+  }
+
+  .hud-logo {
+    font-size: 0.95rem;
+  }
+
+  .stage-badge {
+    font-size: 0.85rem;
+  }
+
+  .timer-badge {
+    font-size: 0.9rem;
+    padding: 3px 8px;
+  }
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .board-shimmer {
+    animation: none !important;
+  }
+}
